@@ -60,6 +60,7 @@ code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
 .vname { margin-left: auto; font-size: 11.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .doclink { font: 600 11px ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); text-decoration: none; border: 1px solid var(--accent); padding: 5px 10px; white-space: nowrap; }
 .doclink:hover { background: var(--accent-soft); }
+button.doclink { font-family: ui-monospace, monospace; }
 
 .pane { display: none; }
 .pane.on { display: block; }
@@ -357,10 +358,10 @@ details.prompt .p-body { padding: 0 16px 14px; font-size: 13.5px; color: var(--m
 .foot { padding: 26px 0 40px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); margin-top: 40px; }
 
 /* ================= skin ================= */
-:root{color-scheme:dark;--bg: #0c1524;--surface: #121d30;--surface-2: #182640;--ink: #dbe6f5;--muted: #8fa3bd;--line: #27395a;--accent: #5b8df0;--accent-ink: #8fb2f5;--accent-soft: #152a52;--agent: #a47ce0;--agent-ink: #bd9df0;--agent-soft: #251b42;--warn: #d9a04a;--warn-soft: #2e2410;--code-bg: #0e1930;--shadow: none;--radius: 0px;--radius-s: 0px;} /* dark permanently — by design */
-@media (prefers-color-scheme: dark){:root{--bg: #0c1524;--surface: #121d30;--surface-2: #182640;--ink: #dbe6f5;--muted: #8fa3bd;--line: #27395a;--accent: #5b8df0;--accent-ink: #8fb2f5;--accent-soft: #152a52;--agent: #a47ce0;--agent-ink: #bd9df0;--agent-soft: #251b42;--warn: #d9a04a;--warn-soft: #2e2410;--code-bg: #0e1930;--shadow: none;--radius: 0px;--radius-s: 0px;}}
-:root[data-theme='dark']{--bg: #0c1524;--surface: #121d30;--surface-2: #182640;--ink: #dbe6f5;--muted: #8fa3bd;--line: #27395a;--accent: #5b8df0;--accent-ink: #8fb2f5;--accent-soft: #152a52;--agent: #a47ce0;--agent-ink: #bd9df0;--agent-soft: #251b42;--warn: #d9a04a;--warn-soft: #2e2410;--code-bg: #0e1930;--shadow: none;--radius: 0px;--radius-s: 0px;}
-:root[data-theme='light']{color-scheme:dark;--bg: #0c1524;--surface: #121d30;--surface-2: #182640;--ink: #dbe6f5;--muted: #8fa3bd;--line: #27395a;--accent: #5b8df0;--accent-ink: #8fb2f5;--accent-soft: #152a52;--agent: #a47ce0;--agent-ink: #bd9df0;--agent-soft: #251b42;--warn: #d9a04a;--warn-soft: #2e2410;--code-bg: #0e1930;--shadow: none;--radius: 0px;--radius-s: 0px;}
+:root{color-scheme:light;--bg: #e9eef6;--surface: #f7fafd;--surface-2: #dfe7f2;--ink: #14263f;--muted: #4d6079;--line: #b9c8dc;--accent: #1e56c8;--accent-ink: #16408f;--accent-soft: #dbe5fa;--agent: #7a3fc0;--agent-ink: #63339c;--agent-soft: #ecdff9;--warn: #a8671d;--warn-soft: #f3e7d0;--code-bg: #e3eaf5;--shadow: none;--radius: 0px;--radius-s: 0px;}
+@media (prefers-color-scheme: dark){:root{color-scheme:dark;--bg: #0c1524;--surface: #121d30;--surface-2: #182640;--ink: #dbe6f5;--muted: #8fa3bd;--line: #27395a;--accent: #5b8df0;--accent-ink: #8fb2f5;--accent-soft: #152a52;--agent: #a47ce0;--agent-ink: #bd9df0;--agent-soft: #251b42;--warn: #d9a04a;--warn-soft: #2e2410;--code-bg: #0e1930;--shadow: none;--radius: 0px;--radius-s: 0px;}}
+:root[data-theme='dark']{color-scheme:dark;--bg: #0c1524;--surface: #121d30;--surface-2: #182640;--ink: #dbe6f5;--muted: #8fa3bd;--line: #27395a;--accent: #5b8df0;--accent-ink: #8fb2f5;--accent-soft: #152a52;--agent: #a47ce0;--agent-ink: #bd9df0;--agent-soft: #251b42;--warn: #d9a04a;--warn-soft: #2e2410;--code-bg: #0e1930;--shadow: none;--radius: 0px;--radius-s: 0px;}
+:root[data-theme='light']{color-scheme:light;--bg: #e9eef6;--surface: #f7fafd;--surface-2: #dfe7f2;--ink: #14263f;--muted: #4d6079;--line: #b9c8dc;--accent: #1e56c8;--accent-ink: #16408f;--accent-soft: #dbe5fa;--agent: #7a3fc0;--agent-ink: #63339c;--agent-soft: #ecdff9;--warn: #a8671d;--warn-soft: #f3e7d0;--code-bg: #e3eaf5;--shadow: none;--radius: 0px;--radius-s: 0px;}
 
 body{background-image:linear-gradient(color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px),
   linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px);
@@ -710,6 +711,7 @@ svg.dmsvg { display: block; width: 100%; height: auto; border: 1.5px solid var(-
     <button data-pane="p-part2" class="p2t" aria-selected="false">Part 2 · Agent</button>
     <button data-pane="p-plan" aria-selected="false">Plan &amp; Prompts</button>
   </nav>
+  <button class="doclink" id="themeToggle" type="button" style="cursor:pointer;background:transparent">◐ Theme</button>
   <a class="doclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">Design doc ↗</a>
   <span class="vname">Take-home · 2026</span>
 </header>
@@ -1941,6 +1943,21 @@ progress file is the hand-off. <span class="hl">Exit: §8-W2 criteria.</span>"</
 </div>
 
 <script>
+/* ---------- theme toggle ---------- */
+var ttBtn = document.getElementById("themeToggle");
+function applyTheme(t) {
+  if (t) document.documentElement.setAttribute("data-theme", t);
+  else document.documentElement.removeAttribute("data-theme");
+}
+try { var savedTheme = localStorage.getItem("pika-theme"); if (savedTheme) applyTheme(savedTheme); } catch (e) {}
+ttBtn.addEventListener("click", function () {
+  var cur = document.documentElement.getAttribute("data-theme");
+  var isDark = cur ? cur === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var next = isDark ? "light" : "dark";
+  applyTheme(next);
+  try { localStorage.setItem("pika-theme", next); } catch (e) {}
+});
+
 /* ---------- tabs ---------- */
 var tabBtns = document.querySelectorAll(".tabs button");
 tabBtns.forEach(function (b) {
