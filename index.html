@@ -601,6 +601,12 @@ svg.flow .pkt.v { fill: var(--agent); }
 .seclink { font: 600 10px ui-monospace, monospace; color: var(--accent-ink); text-decoration: none; border: 1px solid var(--line); padding: 2px 7px; margin-left: 10px; vertical-align: 2px; white-space: nowrap; }
 .seclink:hover { background: var(--accent-soft); }
 
+/* end mark */
+.endmark { display: flex; align-items: center; gap: 16px; margin-top: 38px; }
+.endmark::before, .endmark::after { content: ""; flex: 1; border-top: 1px dashed var(--line); }
+.endmark span { font: 700 11px ui-monospace, monospace; letter-spacing: .24em; text-transform: uppercase; color: var(--accent-ink); white-space: nowrap; }
+.endmark b { color: var(--agent-ink); }
+
 /* brief quote */
 .brief-q { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 11px 14px; font-size: 13.5px; font-style: italic; color: var(--ink); }
 
@@ -1463,6 +1469,7 @@ progress file is the hand-off. <span class="hl">Exit: §8-W2 criteria.</span>"</
           <div class="bar-note" style="margin-top:12px">Every prompt ends the same way: <b>exit criteria are §8's, verbatim</b> — the same criteria human review validates against, so generation speed alone never merges anything. All ten prompts: Plan tab · <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §9, §18 ↗</a></div>
         </div>
       </div>
+      <div class="endmark sub" data-g="pr3"><span>■ &nbsp;End · Pika Creative Platform — System Design · <b>thank you</b> &nbsp;■</span></div>
     </div>
 
     <div class="story-nav">
