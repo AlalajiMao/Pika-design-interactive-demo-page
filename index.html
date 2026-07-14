@@ -58,6 +58,8 @@ code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
 .tabs button:hover { color: var(--ink); background: var(--surface-2); }
 .tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
 .vname { margin-left: auto; font-size: 11.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.doclink { font: 600 11px ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); text-decoration: none; border: 1px solid var(--accent); padding: 5px 10px; white-space: nowrap; }
+.doclink:hover { background: var(--accent-soft); }
 
 .pane { display: none; }
 .pane.on { display: block; }
@@ -670,6 +672,7 @@ svg.dmsvg { display: block; width: 100%; height: auto; border: 1.5px solid var(-
     <button data-pane="p-part2" class="p2t" aria-selected="false">Part 2 · Agent</button>
     <button data-pane="p-plan" aria-selected="false">Plan &amp; Prompts</button>
   </nav>
+  <a class="doclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">Design doc ↗</a>
   <span class="vname">Take-home · 2026</span>
 </header>
 
@@ -694,7 +697,7 @@ svg.dmsvg { display: block; width: 100%; height: auto; border: 1.5px solid var(-
             <div class="bq"><b>Scalability</b><span>Growth ships a new App without engineering effort</span><i>Scene 5</i></div>
             <div class="bq p2"><b>Part 2 · Agent experience</b><span>a Claude-Code-style agent for creative users, on the same platform</span><i>Scenes 12–15</i></div>
           </div>
-          <p class="bm-note" style="margin-top:12px">Deliverables: the design doc · this walkthrough · the build estimate (Scene 11) · the coding-agent prompts (Plan tab).</p>
+          <p class="bm-note" style="margin-top:12px">Deliverables: <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">the design doc ↗</a> · this walkthrough · the build estimate (Scene 11) · the coding-agent prompts (Plan tab).</p>
         </div>
         <div>
           <div class="bmock">
@@ -779,6 +782,7 @@ svg.dmsvg { display: block; width: 100%; height: auto; border: 1.5px solid var(-
             </g>
           </svg>
           <p class="bm-note" style="margin-top:8px"><b>plug</b> = the typed value a step produces · <b>socket</b> = the input type it accepts — a block only fits if the types match, checked while assembling (Appendix B)</p>
+          <div class="bar-note sub" data-g="a4b" style="margin-top:12px"><b>The same document also covers one-click Apps.</b> A step waits for a human only because its <code>input_mapping</code> binds <code>$user.*</code> — collect every input up front, bind each later step to prior outputs, and the spec runs end to end unattended. Pacing is data, not architecture (<a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">design doc §1.2 ↗</a>).</div>
           <div class="storage-note sub" data-g="a5"><strong>Storage:</strong> the spec is a small, immutable JSON document — it simply lives in Postgres as JSONB, in the same database as everything else. Why one database: design doc §5.5, Appendix D.</div>
         </div>
         <pre class="spec">{
@@ -1766,7 +1770,7 @@ turn → tool_calls[] → step_run_id → asset lineage
       </ul>
     </div>
 
-    <div class="foot">Pika Creative Platform — system design take-home · Yukai Jiang · July 2026 · <span class="mono">sources: pika-creative-platform-design.md · presentation-script.md (v3)</span></div>
+    <div class="foot">Pika Creative Platform — system design take-home · Yukai Jiang · July 2026 · <span class="mono">sources: <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener" style="color:var(--accent-ink)">pika-creative-platform-design.md ↗</a> · presentation-script.md (v3)</span></div>
   </div>
 </div>
 
