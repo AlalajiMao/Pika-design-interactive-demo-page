@@ -2068,7 +2068,7 @@ var AFLOWD = {
   j1: { st: 1, hot: ["chat", "api", "pg"], path: "M70,36 L235,36 L390,38", dur: "1.1s",
         n: "<b>1 · Turn opens.</b> The message goes Chat UI → Agent API, which writes the agent_turns row <em>and</em> enqueues plan_turn in one transaction — the queue is pg-boss, in the same Postgres. The session's open Job was created with the session; the HTTP request ends here (§13.1)." },
   j2: { st: 2, hot: ["pg", "worker"], path: "M390,62 L390,94 L235,94 L235,150", dur: "1.2s",
-        n: "<b>2 · The queue wakes a worker.</b> A stateless turn worker picks up plan_turn; its context assembler builds the five-layer prompt on the left — summary, recent turns, the asset manifest as references, advisory budget state (§11.3)." },
+        n: "<b>2 · The queue wakes a worker.</b> A stateless turn worker picks up plan_turn; its context assembler builds the five-layer prompt on the left. One wake is one iteration of the agent loop, unrolled onto the queue — Part 1’s worker executes a decided step; this one convenes the next decision (§11.1)." },
   j3: { st: 3, hot: ["worker", "gw", "prov"], path: "M235,150 L235,262 L390,262 L235,262 L235,150", dur: "1.7s",
         n: "<b>3 · Plan — a round trip.</b> llm.plan goes through the gateway like any other primitive — reusing its auth, rate limits, retries, and metering — and the response returns <em>to the worker</em>: tool calls to make, a user-facing reply, or a question (§11.1)." },
   j4: { st: 4, hot: ["worker", "jr"], path: "M235,150 L390,150", dur: "0.9s",
