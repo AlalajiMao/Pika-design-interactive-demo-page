@@ -576,6 +576,22 @@ svg.flow .pkt { fill: var(--accent); }
 .flow-narr { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; margin-top: 12px; font-size: 13px; color: var(--muted); min-height: 74px; }
 .flow-narr b { color: var(--ink); }
 
+/* agent flow theater */
+#amock .am2, #amock .am3, #amock .am5 { display: none; }
+#amock[data-st="2"] .am2 { display: block; }
+#amock[data-st="3"] .am3, #amock[data-st="4"] .am3, #amock[data-st="5"] .am3 { display: block; }
+#amock[data-st="5"] .am5 { display: block; }
+#amock .am-tiles .gtile { opacity: .3; transition: opacity .4s ease; }
+#amock[data-st="4"] .am-tiles .gtile, #amock[data-st="5"] .am-tiles .gtile { opacity: 1; }
+#amock[data-st="5"] .am-tiles .pinme { border: 1.5px solid var(--agent); }
+#amock[data-st="5"] .am-tiles .pinme::after { content: "pinned"; position: absolute; right: 4px; top: 4px; font: 700 8px ui-monospace, monospace; color: var(--agent-ink); background: var(--agent-soft); padding: 1px 5px; }
+svg.flow .fn.p2 rect { stroke: var(--agent); }
+svg.flow .fn.p2.hot rect { stroke: var(--agent); fill: var(--agent-soft); }
+svg.flow .pkt.v { fill: var(--agent); }
+.flow-narr.v { border-left-color: var(--agent); background: var(--agent-soft); }
+.seclink { font: 600 10px ui-monospace, monospace; color: var(--accent-ink); text-decoration: none; border: 1px solid var(--line); padding: 2px 7px; margin-left: 10px; vertical-align: 2px; white-space: nowrap; }
+.seclink:hover { background: var(--accent-soft); }
+
 /* brief quote */
 .brief-q { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 11px 14px; font-size: 13.5px; font-style: italic; color: var(--ink); }
 
@@ -1282,36 +1298,59 @@ jobs: <span class="hl">succeeded</span> · completed_at set</span></pre>
     <div class="scene" data-q="Part 2 · Request flow: an agent turn">
       <div class="sc-meta"><span class="sc-q"></span><span class="sc-count"></span></div>
       <h3 class="sc-title">One agent turn, frame by frame</h3>
-      <p class="narr">Same lane grammar as the App run — deliberately. The worker, like every worker here, does one hop and exits; between events a session <em>is</em> its rows.</p>
+      <p class="narr">Same grammar as the App run — deliberately. Left: the conversation as the user sees it. Right: what moves underneath. The worker does one hop and exits; between events a session <em>is</em> its rows.</p>
       <div class="cols2">
         <div>
-          <div class="lanes"><span class="lane">Chat UI</span><span class="lane">Agent worker</span><span class="lane">Gateway · llm.plan</span><span class="lane">Job Runner</span><span class="lane">Postgres</span></div>
-          <ol class="hops">
-            <li class="sub" data-g="j1"><span class="h-n">1</span><span><strong>Turn opens.</strong> Message row + <span class="h-path">plan_turn</span> enqueued, one transaction — the same synchronous half as Part 1</span></li>
-            <li class="sub" data-g="j2"><span class="h-n">2</span><span><strong>Plan.</strong> The five-layer context goes to <span class="h-path">llm.plan</span> — itself a registered primitive: LLM metering, rate limits, idempotency from the same gateway machinery. The planner is not special.</span></li>
-            <li class="sub" data-g="j3"><span class="h-n">3</span><span><strong>Act.</strong> Tool calls pass the budget gate, validate against the primitive's input schema, and append StepRuns to the session's open Job. <em>From here the async half is literally Scene 7, beats 2–6.</em></span></li>
-            <li class="sub" data-g="j4"><span class="h-n">4</span><span><strong>Observe.</strong> <span class="h-path">step.completed</span> wakes the worker; results enter the manifest as references + cached descriptions — never pixels. Loop until the model presents or asks.</span></li>
-            <li class="sub" data-g="j5"><span class="h-n">5</span><span><strong>Choose &amp; gate.</strong> The user picks a draft → <span class="h-path">pin_asset</span>; the next step is a video render → the confirmation gate shows the estimate first. In this domain the dangerous operation <em>is</em> the expensive operation — the cost gate is the safety gate. Content safety is layered the same way: platform-owned moderation primitives check messages and uploads before the model or the providers ever see them.</span></li>
-          </ol>
-        </div>
-        <div>
-          <div class="sub" data-g="j2">
-            <span class="proj-cap" style="color:var(--agent-ink)">Context assembly · cheapest first</span>
+          <div class="bmock" id="amock" data-st="1">
+            <div class="bm-bar"><i></i><i></i><i></i><span class="bm-url">pika.art/create — agent session</span></div>
+            <div class="bm-body" style="min-height:216px">
+              <div class="bub u">A 30s fitness short — same host, home-gym setting, three workout beats.</div>
+              <div class="am2"><div class="bub"><span class="dots3"><i></i><i></i><i></i></span>&nbsp; assembling context · planning…</div></div>
+              <div class="am3">
+                <div class="bub">Drafting <b>4 keyframes</b> first — the full video runs only after you pick. <b>est. $0.48</b></div>
+                <div class="tile-row am-tiles" style="grid-template-columns:repeat(4,1fr)"><span class="gtile"></span><span class="gtile pinme"></span><span class="gtile"></span><span class="gtile"></span></div>
+              </div>
+              <div class="am5">
+                <div class="bub u">The second one.</div>
+                <div class="bub">Locked via <code>pin_asset</code>. Full 30s render ≈ <b>$1.20</b> — approve? <span class="bm-chip">Confirm ▸</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="sub" data-g="j2" style="margin-top:10px">
+            <span class="proj-cap" style="color:var(--agent-ink)">Context assembled each call · cheapest first</span>
             <div class="ctx">
               <div class="ctx-l"><b>1 · system prompt + tool catalog</b><small>stable prefix — prompt-cached</small></div>
               <div class="ctx-l"><b>2 · rolling session summary</b><small>derived, always rebuildable from the turn log</small></div>
               <div class="ctx-l"><b>3 · recent turns, verbatim</b><small>sessions stay O(recent turns)</small></div>
               <div class="ctx-l"><b>4 · asset manifest</b><small>id · type · lineage · cached vision description · pinned flag</small></div>
-              <div class="ctx-l"><b>5 · budget state</b><small>caps + consumed, checked pre-call</small></div>
+              <div class="ctx-l"><b>5 · budget state</b><small>advisory, for planning quality — enforcement is the deterministic budget gate, outside the model</small></div>
             </div>
           </div>
-          <div class="sub" data-g="j3" style="margin-top:12px">
-            <span class="proj-cap" style="color:var(--agent-ink)">Agent-only tools riding alongside</span>
-            <div class="tools-chips"><span>inspect_asset</span><span>list_session_assets</span><span>pin_asset</span><span>estimate_cost</span></div>
-          </div>
-          <pre class="spec sub" data-g="j4" style="margin-top:12px">// audit trail, end to end
-turn → tool_calls[] → step_run_id → asset lineage
-<span class="cm">// every conversation traceable to every bill</span></pre>
+        </div>
+        <div>
+          <svg class="flow" id="asvg" viewBox="0 0 460 300" role="img" aria-label="Agent components with the turn animated across them">
+            <path class="fe" d="M130,34 L180,34"/>
+            <path class="fe" d="M290,34 L330,34"/>
+            <path class="fe" d="M330,52 L130,132"/>
+            <path class="fe" d="M70,170 L70,240"/>
+            <path class="fe" d="M130,148 L180,148"/>
+            <path class="fe" d="M290,148 L330,148"/>
+            <path class="fe" d="M360,170 L260,240"/>
+            <path class="fe" d="M390,126 L390,62"/>
+            <path class="fe" d="M415,170 L415,240"/>
+            <g class="fn p2" data-f="chat"><rect x="10" y="14" width="120" height="40"/><text x="22" y="31">Chat UI</text><text class="fs" x="22" y="45">chat + canvas</text></g>
+            <g class="fn p2" data-f="api"><rect x="180" y="14" width="110" height="40"/><text x="192" y="31">Agent API</text><text class="fs" x="192" y="45">short transactions</text></g>
+            <g class="fn store" data-f="pg"><rect x="330" y="14" width="120" height="48"/><text x="342" y="33">Postgres</text><text class="fs" x="342" y="48">sessions · turns · queue</text></g>
+            <g class="fn p2" data-f="worker"><rect x="10" y="126" width="120" height="44"/><text x="22" y="145">Turn worker</text><text class="fs" x="22" y="160">one hop, then exits</text></g>
+            <g class="fn p2" data-f="gate"><rect x="180" y="126" width="110" height="44"/><text x="192" y="145">Budget gate</text><text class="fs" x="192" y="160">deterministic</text></g>
+            <g class="fn" data-f="jr"><rect x="330" y="126" width="120" height="44"/><text x="342" y="145">Job Runner</text><text class="fs" x="342" y="160">the open session Job</text></g>
+            <g class="fn" data-f="gw"><rect x="10" y="240" width="120" height="40"/><text x="22" y="257">Gateway</text><text class="fs" x="22" y="271">llm.plan — a primitive</text></g>
+            <g class="fn" data-f="model"><rect x="180" y="240" width="110" height="40"/><text x="192" y="257">Model APIs</text><text class="fs" x="192" y="271">async · callback</text></g>
+            <g class="fn store" data-f="asset"><rect x="330" y="240" width="120" height="40"/><text x="342" y="257">Asset Store</text><text class="fs" x="342" y="271">refs, never pixels</text></g>
+            <circle class="pkt v" id="apkt" r="5" opacity="0"><animateMotion id="aanim" dur="1s" begin="indefinite" fill="freeze"/></circle>
+          </svg>
+          <div class="flow-narr v" id="anarr"></div>
+          <div class="tools-chips" style="margin-top:10px"><span>inspect_asset</span><span>list_session_assets</span><span>pin_asset</span><span>estimate_cost</span></div>
         </div>
       </div>
     </div>
@@ -1323,6 +1362,8 @@ turn → tool_calls[] → step_run_id → asset lineage
       <p class="narr">Two independent spend streams, and a quality gate that is deterministic where possible, statistical where not.</p>
       <div class="cols2">
         <div>
+          <h3 style="margin:0 0 2px">Cost</h3>
+          <p class="bm-note" style="margin-bottom:4px">two spend streams, two sets of controls — doc §15</p>
           <div class="meter sub" data-g="k1">
             <h4>Media spend <small>dominant · gated</small></h4>
             <div class="mtrack"><div class="mfill m1"></div><div class="mgate" style="left:40%" data-l="confirm: video render"><span></span></div><div class="mgate" style="left:78%" data-l="session cap"></div></div>
@@ -1335,6 +1376,8 @@ turn → tool_calls[] → step_run_id → asset lineage
           </div>
         </div>
         <div>
+          <h3 style="margin:0 0 2px">Testing &amp; Evaluation</h3>
+          <p class="bm-note" style="margin-bottom:4px">five layers, deterministic where possible, statistical where not — doc §16</p>
           <span class="proj-cap" style="color:var(--agent-ink)">The eval pyramid · fills bottom-up</span>
           <div class="pyr">
             <div class="pyr-l w5 sub" data-g="k3">harness tests · CI — the machinery, LLM removed<small>recorded responses + mocked primitives; most regressions are "code broke the loop" — caught on every commit</small></div>
@@ -1347,21 +1390,29 @@ turn → tool_calls[] → step_run_id → asset lineage
       </div>
     </div>
 
-    <!-- SCENE 15 · close -->
-    <div class="scene" data-q="Close">
+    <!-- SCENE 16 · part 2 estimate + prompts + close -->
+    <div class="scene" data-q="Part 2 · Estimate &amp; prompts — close">
       <div class="sc-meta"><span class="sc-q"></span><span class="sc-count"></span></div>
-      <div class="close-stage">
-        <div class="close-line">One bet — <em>Apps are data, not code.</em><br>One runtime, <span class="p2c">two front doors.</span></div>
-        <div class="close-chips">
-          <span><b>Growth</b> got a canvas, not a backlog</span>
-          <span><b>the runtime</b> got a state machine, not a held connection</span>
-          <span><b>the agent</b> got a plan format, not a rewrite</span>
-        </div>
-        <div class="close-chips">
-          <span><b>7 wk</b> · v1, 3 engineers</span>
-          <span><b>wk 4</b> · internal MVP</span>
-          <span><b>wk 9</b> · agent lands, own engineer</span>
-        </div>
+      <h3 class="sc-title">The whole build, on one clock</h3>
+      <p class="narr">The agent track starts the moment the Part 1 MVP integrates — it needs the integrated platform, not the finished v1. Everything lands by week nine.</p>
+      <div class="gtt">
+        <div class="gtt-head" style="grid-template-columns:190px repeat(18,1fr)"><span></span><span>w1</span><span>w2</span><span>w3</span><span>w4</span><span>w5</span><span>w6</span><span>w7</span><span>w8</span><span>w9</span></div>
+        <div class="gtt-row sub" data-g="z1" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">W1–W3 · platform core ×3 eng</span><div class="gbar" style="grid-column:2/span 5"></div></div>
+        <div class="gtt-row sub" data-g="z1" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">Integration week (all hands)</span><div class="gbar mvp" style="grid-column:8/span 2"></div><span class="gtt-flag">◆ MVP — agent track unblocked</span></div>
+        <div class="gtt-row sub" data-g="z1" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">W4–W6 · frontend · canvas · BI</span><div class="gbar" style="grid-column:10/span 4"></div></div>
+        <div class="gtt-row sub" data-g="z1" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">Hardening</span><div class="gbar mvp" style="grid-column:14/span 2"></div><span class="gtt-flag">◆ v1</span></div>
+        <div class="gtt-row sub" data-g="z2" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">P1 · Agent Service MVP</span><div class="gbar v" style="grid-column:10/span 4"></div></div>
+        <div class="gtt-row sub" data-g="z2" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">P2 · Tool adapter</span><div class="gbar v" style="grid-column:10/span 4"></div></div>
+        <div class="gtt-row sub" data-g="z2" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">P3 · Cost controls</span><div class="gbar v" style="grid-column:14/span 2"></div></div>
+        <div class="gtt-row sub" data-g="z2" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">P4 · Eval harness</span><div class="gbar v" style="grid-column:16/span 2"></div></div>
+        <div class="gtt-row sub" data-g="z2" style="grid-template-columns:190px repeat(18,1fr)"><span class="gl">Hardening + canary</span><div class="gbar v" style="grid-column:18/span 1"></div><span class="gtt-flag" style="grid-column:1;text-align:right;padding-right:6px">◆ agent live · wk 9</span></div>
+        <div class="gtt-note sub" data-g="z2">One dedicated engineer on the agent track (doc §17); Part 1's remaining workstreams share nothing with its critical path. Full phase table with tests and exit criteria: Plan tab · <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §17 ↗</a></div>
+      </div>
+      <div class="bar-note sub" data-g="z3" style="margin-top:12px"><b>How it gets built — one prompt strategy for both parts (doc §9, §18):</b> the design doc is the specification. Every workstream gets one <em>initial</em> coding-agent prompt plus a shared preamble — split the work into tasks, keep a progress file, one task per commit, record conflicts instead of silently diverging. Only initial prompts are scripted; follow-up steering belongs to the owning engineer. AI velocity is priced in — with human review reserved against every exit criterion.</div>
+      <div class="close-chips sub" data-g="z4" style="margin-top:18px;justify-content:flex-start">
+        <span><b>One bet</b> — Apps are data, not code</span>
+        <span><b>One runtime</b>, two front doors</span>
+        <span><b>Thank you</b> · design doc ↗ in the sidebar</span>
       </div>
     </div>
 
@@ -1376,7 +1427,7 @@ turn → tool_calls[] → step_run_id → asset lineage
 <!-- ============================== SYSTEM ============================== -->
 <div id="p-system" class="pane">
   <div class="wrap pane-pad">
-    <div class="section-head"><div class="eyebrow">System</div><h2>The architecture, explorable</h2>
+    <div class="section-head"><div class="eyebrow">System</div><h2>The architecture, explorable <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §2 ↗</a></h2>
       <p>Click any component for its role, decisions, and tech stack. Toggle the Part 2 overlay to see what the agent adds.</p></div>
     <div class="diagram-shell">
       <div class="diagram-bar">
@@ -1452,26 +1503,50 @@ turn → tool_calls[] → step_run_id → asset lineage
     </details>
 
     <div class="section-gap"></div>
-    <div class="section-head"><div class="eyebrow">System · Request flow</div><h2>One Job, frame by frame</h2></div>
-    <div class="stepper">
-      <div class="film" id="film" role="tablist" aria-label="Flow steps"></div>
-      <div class="step-stage">
-        <div>
-          <h3 id="s-title"></h3>
-          <p class="s-desc" id="s-desc"></p>
-          <span class="state-chip" id="s-state"></span>
-          <div class="step-nav">
-            <button id="s-prev">← Prev</button>
-            <button id="s-next">Next →</button>
-            <span class="step-count" id="s-count"></span>
-          </div>
-        </div>
-        <div class="actor-rail" id="actors" aria-label="Active components"></div>
-      </div>
-    </div>
+    <div class="section-head"><div class="eyebrow">System · Request flows</div><h2>The flows from the doc, by use case <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §3 ↗</a></h2>
+      <p>Each expands into the doc's phase-by-phase walkthrough; the Story tab animates the second and fourth.</p></div>
+    <details class="prompt">
+      <summary><span class="tag shared">§3.1</span>Authoring &amp; publish — Growth creates an App</summary>
+      <div class="p-body" style="font-family:var(--font-body);font-size:14px"><ol style="margin:0;padding-left:20px">
+        <li><b>Engineering stocks both shelves</b> — primitives registered with I/O schemas, cost/latency, quota &amp; retry policy; each <em>kind</em> of step UI added once to the shared component library.</li>
+        <li><b>Growth drafts</b> — registry cards load onto the canvas; every drawn connection is saved as an <code>input_mapping</code> line, compatibility checked in the browser.</li>
+        <li><b>Growth validates</b> — static checks re-run, then a dry-run on saved fixture inputs through the production gateway on a sandbox quota; a current PASS unlocks publish.</li>
+        <li><b>Growth publishes</b> — v(N) appended, immutable, staged rollout; in-flight Jobs stay pinned to their version.</li>
+      </ol></div>
+    </details>
+    <details class="prompt">
+      <summary><span class="tag shared">§3.2</span>A user runs an App — the happy path <span style="font-weight:400;color:var(--muted)">&nbsp;(animated in Story · Scene 7)</span></summary>
+      <div class="p-body" style="font-family:var(--font-body);font-size:14px"><ol style="margin:0;padding-left:20px">
+        <li><b>Create</b> — POST /jobs writes the jobs row pinned to the spec version; 201 in milliseconds, nothing generated or billed.</li>
+        <li><b>Submit a step — the synchronous half</b> — one transaction inserts the StepRun <em>and</em> enqueues execute_step; 202; the HTTP request ends here.</li>
+        <li><b>The queue takes over</b> — a worker calls through the gateway, records the provider's task id, schedules its own deadline check, exits.</li>
+        <li><b>The result comes back</b> — the callback lands; one transaction writes assets + lineage, flips the row to succeeded, NOTIFYs; SSE pushes step.completed.</li>
+        <li><b>Repeat; finish</b> — the reducer finds no next step → job succeeded. Sync primitives under ~2s return inline.</li>
+      </ol></div>
+    </details>
+    <details class="prompt">
+      <summary><span class="tag shared">§3.3</span>Waiting, failure &amp; retry — the StepRun state machine <span style="font-weight:400;color:var(--muted)">&nbsp;(animated in Story · Scene 8)</span></summary>
+      <div class="p-body" style="font-family:var(--font-body);font-size:14px"><ol style="margin:0;padding-left:20px">
+        <li><b>Waiting is a first-class state</b> — running + a deadline from the primitive's p95; reopening the page reads status, SSE resumes.</li>
+        <li><b>Transient failure</b> — gateway classifies; retrying with backoff, capped by registry policy; invisible unless attempts run out.</li>
+        <li><b>Lost callback</b> — the step's own check_step message verifies at the source: reschedule, recover, or timed_out → retried.</li>
+        <li><b>Permanent failure</b> — fail fast with an actionable error; an identical resubmit hits the idempotency key instead of billing again.</li>
+        <li><b>Job-level resume</b> — always from the last succeeded StepRun's checkpoint, never from the top.</li>
+      </ol></div>
+    </details>
+    <details class="prompt">
+      <summary><span class="tag new">§13</span>An agent turn — Part 2 <span style="font-weight:400;color:var(--muted)">&nbsp;(animated in Story · Scene 14)</span></summary>
+      <div class="p-body" style="font-family:var(--font-body);font-size:14px"><ol style="margin:0;padding-left:20px">
+        <li><b>Turn opens</b> — message row + plan_turn enqueued, one transaction.</li>
+        <li><b>Plan</b> — five-layer context → llm.plan via the gateway; decision: call tools, ask, or present.</li>
+        <li><b>Act</b> — tool calls pass the deterministic budget gate, append StepRuns to the open session Job; the async half is literally §3.2.</li>
+        <li><b>Observe &amp; continue</b> — completions re-enter the manifest as refs + cached descriptions.</li>
+        <li><b>Choose &amp; gate</b> — pin_asset records the choice; expensive renders wait for confirmation.</li>
+      </ol></div>
+    </details>
 
     <div class="section-gap"></div>
-    <div class="section-head"><div class="eyebrow">System · Trade-offs</div><h2>Five decisions, argued</h2></div>
+    <div class="section-head"><div class="eyebrow">System · Trade-offs</div><h2>Five decisions, argued <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §5 ↗</a></h2></div>
     <details class="tradeoff" open>
       <summary><span class="t-title">Execution model</span><span class="t-pick">→ async-first, sync fast path</span></summary>
       <div class="t-body">
@@ -1514,7 +1589,7 @@ turn → tool_calls[] → step_run_id → asset lineage
     </details>
 
     <div class="section-gap"></div>
-    <div class="section-head"><div class="eyebrow">System · Resiliency</div><h2>Six failure domains, absorbed</h2>
+    <div class="section-head"><div class="eyebrow">System · Resiliency</div><h2>Six failure domains, absorbed <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §6 ↗</a></h2>
       <p>The bar: a failure must never cost a duplicate render or a stuck Job.</p></div>
     <div class="grid g2">
       <div class="card"><h3>A call fails → classified</h3><p>The gateway classifies every failure: <em>transient</em> (backoff + jitter as a delayed retry message, attempts capped by registry policy), <em>permanent</em> (fail fast, actionable error), <em>quota</em> (reschedule, don't burn an attempt). Fan-out steps get partial-success via the step's optional <code>min_outputs</code>: deliver at the declared minimum, retry only the shortfall — never re-bill successes.</p></div>
@@ -1531,7 +1606,7 @@ turn → tool_calls[] → step_run_id → asset lineage
 <!-- ============================== DATA ============================== -->
 <div id="p-data" class="pane">
   <div class="wrap pane-pad">
-    <div class="section-head"><div class="eyebrow">Data &amp; specs</div><h2>Seven entities, one spine</h2>
+    <div class="section-head"><div class="eyebrow">Data &amp; specs</div><h2>Seven entities, one spine <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §4.1 ↗</a></h2>
       <p>Steps are stored in order, but the DAG is implied by <code>input_mapping</code> — any step may reference any earlier step's output. Field-level tables live in the design doc §4.1; storage engines in Appendix D.</p></div>
     <div class="grid g3">
       <div class="card entity"><h3>Primitive <span class="tag shared">registry</span></h3><ul>
@@ -1638,7 +1713,7 @@ turn → tool_calls[] → step_run_id → asset lineage
 </svg>
 
     <div class="section-gap"></div>
-    <div class="section-head"><div class="eyebrow">Data · Storage</div><h2>The shape of the data picks the engine</h2></div>
+    <div class="section-head"><div class="eyebrow">Data · Storage</div><h2>The shape of the data picks the engine <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §4.2 · §5.5 ↗</a></h2></div>
     <div class="grid g2">
       <div class="card"><h3>Transactional state machines <span class="tag shared">Postgres</span></h3><p>Jobs / StepRuns: multi-row atomic transitions, DB-enforced idempotency uniqueness, monotonic statuses — the correctness load-bearing wall. pg-boss rides in the same cluster, so a state change and the message that drives it commit atomically.</p></div>
       <div class="card"><h3>Everything else, by shape</h3><p>Immutable documents (specs, registry) → Postgres JSONB, replica-served · bytes → S3 + CDN · append-only aggregates → ClickHouse · ephemeral pacing state → in-memory/Redis, deliberately lossy.</p></div>
@@ -1650,7 +1725,7 @@ turn → tool_calls[] → step_run_id → asset lineage
 <!-- ============================== PART 2 ============================== -->
 <div id="p-part2" class="pane">
   <div class="wrap pane-pad">
-    <div class="section-head"><div class="eyebrow violet">Part 2 · Agent experience</div><h2>What changes, what stays shared</h2>
+    <div class="section-head"><div class="eyebrow violet">Part 2 · Agent experience</div><h2>What changes, what stays shared <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §10 ↗</a></h2>
       <p>An App is a <em>compiled</em> plan; the agent <em>writes the plan at runtime</em>. Both produce the same StepRuns through the same runtime.</p></div>
     <div class="share-table-wrap">
     <table class="share-table">
@@ -1668,7 +1743,7 @@ turn → tool_calls[] → step_run_id → asset lineage
     </div>
 
     <div class="section-gap"></div>
-    <div class="section-head"><div class="eyebrow violet">Part 2 · Harness</div><h2>Six layers, four inherited</h2></div>
+    <div class="section-head"><div class="eyebrow violet">Part 2 · Harness</div><h2>Six layers, four inherited <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §11 ↗</a></h2></div>
     <div class="share-table-wrap">
     <table class="share-table">
       <thead><tr><th>Harness layer</th><th>Status</th><th>How</th></tr></thead>
@@ -1695,7 +1770,7 @@ turn → tool_calls[] → step_run_id → asset lineage
     <div class="section-gap"></div>
     <div class="grid g2">
       <div class="card">
-        <h3>Cost · media spend <span class="tag new">dominant</span></h3>
+        <h3>Cost · media spend <span class="tag new">dominant</span> <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">§15 ↗</a></h3>
         <ul>
           <li><strong>Budget envelopes</strong> per session and per turn, estimated pre-call from registry <code>cost_estimate</code> — checked and deducted in the same transaction that creates the StepRun.</li>
           <li><strong>Confirmation gates</strong> above a threshold (any video render) — estimate shown, agent waits.</li>
@@ -1717,7 +1792,7 @@ turn → tool_calls[] → step_run_id → asset lineage
     <div class="section-gap"></div>
     <div class="grid g2">
       <div class="card">
-        <h3>Testing &amp; evaluation <span class="tag new">release gate</span></h3>
+        <h3>Testing &amp; evaluation <span class="tag new">release gate</span> <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">§16 ↗</a></h3>
         <ul>
           <li><strong>Harness tests (CI):</strong> the machinery with the LLM removed — recorded responses + mocked primitives, deterministic, every commit.</li>
           <li><strong>Tool-selection evals (prompt gate):</strong> context fixtures replayed against the live planner only — calls validated, never executed; tokens-only cost gates every prompt/tool-description/model change.</li>
@@ -1727,7 +1802,7 @@ turn → tool_calls[] → step_run_id → asset lineage
         </ul>
       </div>
       <div class="card">
-        <h3>Request flow · one turn</h3>
+        <h3>Request flow · one turn <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">§13 ↗</a></h3>
         <ul>
           <li><strong>Turn opens:</strong> message row + <code>plan_turn</code>, one transaction.</li>
           <li><strong>Plan:</strong> five-layer context → <code>llm.plan</code> via the gateway.</li>
@@ -1743,7 +1818,7 @@ turn → tool_calls[] → step_run_id → asset lineage
 <!-- ============================== PLAN ============================== -->
 <div id="p-plan" class="pane">
   <div class="wrap pane-pad">
-    <div class="section-head"><div class="eyebrow">Plan</div><h2>Seven weeks to v1 — nine with the agent</h2>
+    <div class="section-head"><div class="eyebrow">Plan</div><h2>Seven weeks to v1 — nine with the agent <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §8 · §17 ↗</a></h2>
       <p>3 engineers; one owns one workstream end to end. AI-assisted velocity is priced in — and so is its counterweight: <strong>reserved time for human code review and validation against each exit criterion</strong>, because AI-generated code is cheap to produce and expensive to trust; nothing merges on generation speed alone. MVP at week 4, production v1 at week 7, Part 2 lands ~week 9 on its own engineer. Solo, Part 1 alone is ~12 weeks.</p></div>
 
     <div class="share-table-wrap">
@@ -1771,7 +1846,7 @@ turn → tool_calls[] → step_run_id → asset lineage
     </div>
 
     <div class="section-gap"></div>
-    <div class="section-head"><div class="eyebrow">Plan · Deferred by design</div><h2>Every simplification carries a named successor</h2>
+    <div class="section-head"><div class="eyebrow">Plan · Deferred by design</div><h2>Every simplification carries a named successor <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §8.1 · §17.1 ↗</a></h2>
       <p>The rule from §5.5, run through the whole design: bake in what is expensive to retrofit; defer what is cheap to migrate. Nothing below is a dead end — each row has a successor and an explicit revisit trigger (design doc §8.1, §17.1).</p></div>
     <div class="share-table-wrap">
     <table class="share-table">
@@ -1792,7 +1867,7 @@ turn → tool_calls[] → step_run_id → asset lineage
     </div>
 
     <div class="section-gap"></div>
-    <div class="section-head"><div class="eyebrow">Plan · Coding-agent prompts</div><h2>One prompt per workstream</h2>
+    <div class="section-head"><div class="eyebrow">Plan · Coding-agent prompts</div><h2>One prompt per workstream <a class="seclink" href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">doc §9 · §18 ↗</a></h2>
       <p>Every prompt gets the same preamble: <em>the design doc is your specification — split the workstream into tasks, write the plan to a progress file, update it after each task, one task per commit, and record conflicts instead of silently diverging. A new session starts by reading the doc and the progress file.</em></p>
       <p>These are <strong>initial prompts only</strong>. Each thread accumulates its own follow-ups — adjustments, tests, debugging — across many commits, steered by the owning engineer's taste and judgment; we keep the spec clean here rather than scripting those.</p></div>
     <div id="promptlist"></div>
@@ -1943,25 +2018,43 @@ var FLOWD = {
   d7: { st: 7, dead: false, hot: ["browser", "api", "pg"], path: "M70,34 L235,34 L235,150",
         n: "<b>6 · Repeat &amp; finish.</b> Picking, editing, and animating run the same two halves; the reducer finds no next step → job succeeded. Primitives under ~2s are the one exception: they return inline — decided per primitive by the registry, never per App." }
 };
+var AFLOWD = {
+  j1: { st: 1, hot: ["chat", "api", "pg"], path: "M70,34 L390,34",
+        n: "<b>1 · Turn opens.</b> The user's message lands as a row plus a plan_turn message — one transaction, the same synchronous half as Part 1." },
+  j2: { st: 2, hot: ["pg", "worker", "gw"], path: "M390,62 L70,148 L70,240",
+        n: "<b>2 · Plan.</b> The worker wakes, assembles the five-layer context on the left, and calls llm.plan through the gateway — the planner is itself a registered primitive, not special." },
+  j3: { st: 3, hot: ["worker", "gate", "jr"], path: "M130,148 L330,148",
+        n: "<b>3 · Act.</b> Tool calls validate against the primitive's schema, pass the <b>deterministic budget gate</b> — checked and deducted in the StepRun transaction — and append to the session's open Job. From here it is literally Scene 7's async half." },
+  j4: { st: 4, hot: ["model", "jr", "pg", "worker", "asset"], path: "M390,126 L390,62 L130,148",
+        n: "<b>4 · Observe.</b> step.completed wakes the worker; results enter the manifest as references plus cached descriptions — never pixels. The drafts appear in the chat." },
+  j5: { st: 5, hot: ["chat", "api", "gate", "jr"], path: "M70,34 L235,34 L235,126 L330,148",
+        n: "<b>5 · Choose &amp; gate.</b> The user pins a draft; the full render shows its estimate and waits for confirmation — the cost gate is the safety gate. Platform-owned moderation primitives screen messages and uploads the same way." }
+};
+var THEATERS = [
+  { d: FLOWD, mock: "fmock", svg: "fsvg", narr: "fnarr", pkt: "fpkt", anim: "fanim" },
+  { d: AFLOWD, mock: "amock", svg: "asvg", narr: "anarr", pkt: "apkt", anim: "aanim" }
+];
 function FLOW_ON(g) {
-  var f = FLOWD[g];
-  if (!f) return;
-  var fmock = document.getElementById("fmock"), fsvg = document.getElementById("fsvg"),
-      fnarr = document.getElementById("fnarr"), fpkt = document.getElementById("fpkt"),
-      fanim = document.getElementById("fanim");
-  if (!fmock) return;
-  fmock.dataset.st = f.st;
-  fmock.classList.toggle("dead", f.dead);
-  fsvg.querySelectorAll(".fn").forEach(function (el) {
-    el.classList.toggle("hot", f.hot.indexOf(el.dataset.f) !== -1);
-  });
-  fnarr.innerHTML = f.n;
-  if (f.path) {
-    fpkt.setAttribute("opacity", "1");
-    fanim.setAttribute("path", f.path);
-    if (!REDUCED && fanim.beginElement) { try { fanim.beginElement(); } catch (e) {} }
-  } else {
-    fpkt.setAttribute("opacity", "0");
+  for (var i = 0; i < THEATERS.length; i++) {
+    var th = THEATERS[i], f = th.d[g];
+    if (!f) continue;
+    var mock = document.getElementById(th.mock), svg = document.getElementById(th.svg),
+        narr = document.getElementById(th.narr), pkt = document.getElementById(th.pkt),
+        anim = document.getElementById(th.anim);
+    if (!mock) continue;
+    mock.dataset.st = f.st;
+    mock.classList.toggle("dead", !!f.dead);
+    svg.querySelectorAll(".fn").forEach(function (el) {
+      el.classList.toggle("hot", f.hot.indexOf(el.dataset.f) !== -1);
+    });
+    narr.innerHTML = f.n;
+    if (f.path) {
+      pkt.setAttribute("opacity", "1");
+      anim.setAttribute("path", f.path);
+      if (!REDUCED && anim.beginElement) { try { anim.beginElement(); } catch (e) {} }
+    } else {
+      pkt.setAttribute("opacity", "0");
+    }
   }
 }
 
@@ -2082,56 +2175,7 @@ function setMode(p2) {
 btnP1.addEventListener("click", function () { setMode(false); });
 btnP2.addEventListener("click", function () { setMode(true); });
 
-/* ---------- request flow stepper ---------- */
-var STEPS = [
-  { t: "Create the Job", d: "POST /jobs with an idempotency key: insert the jobs row, pinned to app_version 3, return 201 immediately. Nothing generated, nothing billed — creating a Job is writing a row.", a: ["User", "Frontend", "Job API", "Postgres"], s: "jobs → created → running" },
-  { t: "Submit a step — the synchronous half", d: "The user submits the character description. One transaction: insert step_runs #1 (pending) AND enqueue execute_step. Reply 202. The HTTP request ends here — no user request ever waits on a model.", a: ["User", "Frontend", "Job API", "Postgres"], s: "step_run #1 → pending · message enqueued" },
-  { t: "Dispatch — the queue takes over", d: "A worker picks up the message and calls through the gateway; the dispatch queue paces the call into the provider, which returns a task id at once. The worker records it, schedules the deadline check, and exits.", a: ["Queue + Worker", "Gateway", "Model API", "Postgres"], s: "step_run #1 → running · deadline scheduled" },
-  { t: "Nobody is holding this step", d: "For the next ten minutes no process anywhere holds this step — the run is rows in Postgres. The user can close the tab; the browser shows 'generating…' over SSE until then.", a: ["Postgres"], s: "running · attempt_count: 1" },
-  { t: "The callback lands", d: "The provider POSTs the result to the callback URL. One transaction: write asset rows with lineage, flip the row to succeeded, NOTIFY. If the callback never arrives, the step's own deadline check recovers it from the provider.", a: ["Model API", "Gateway", "Asset Store", "Postgres"], s: "step_run #1 → succeeded · assets written" },
-  { t: "Push to the browser", d: "NOTIFY fans out over SSE: an open page renders the four candidate faces; a closed session gets a notification. Events carry a monotonic seq — the client re-fetches on a gap.", a: ["Postgres", "SSE fan-out", "Frontend", "User"], s: "event: step.completed" },
-  { t: "Repeat per step; finish", d: "Picking, editing, and animating run the same two halves — each in-page edit is its own sub-StepRun. The last step succeeds, the reducer finds no next step: job → succeeded, intermediates start their 30-day cold countdown.", a: ["Job API", "Queue + Worker", "Postgres", "Metrics"], s: "job → succeeded" }
-];
-var ALL_ACTORS = ["User", "Frontend", "Job API", "Postgres", "Queue + Worker", "Gateway", "Model API", "Asset Store", "SSE fan-out", "Metrics"];
-var film = document.getElementById("film"), actors = document.getElementById("actors");
-var sTitle = document.getElementById("s-title"), sDesc = document.getElementById("s-desc"),
-    sState = document.getElementById("s-state"), sCount = document.getElementById("s-count"),
-    sPrev = document.getElementById("s-prev"), sNext = document.getElementById("s-next");
-var cur = 0;
-STEPS.forEach(function (st, i) {
-  var b = document.createElement("button");
-  b.textContent = i + 1; b.setAttribute("role", "tab");
-  b.setAttribute("aria-label", "Step " + (i + 1) + ": " + st.t);
-  b.addEventListener("click", function () { cur = i; renderStep(); });
-  film.appendChild(b);
-});
-ALL_ACTORS.forEach(function (a) {
-  var el = document.createElement("div");
-  el.className = "actor"; el.textContent = a; el.dataset.a = a;
-  actors.appendChild(el);
-});
-function renderStep() {
-  var st = STEPS[cur];
-  sTitle.textContent = (cur + 1) + " · " + st.t;
-  sDesc.textContent = st.d;
-  sState.textContent = st.s;
-  sCount.textContent = "frame " + (cur + 1) + " / " + STEPS.length;
-  sPrev.disabled = cur === 0; sNext.disabled = cur === STEPS.length - 1;
-  film.querySelectorAll("button").forEach(function (b, i) {
-    b.classList.toggle("on", i === cur); b.classList.toggle("done", i < cur);
-    b.setAttribute("aria-selected", String(i === cur));
-  });
-  actors.querySelectorAll(".actor").forEach(function (el) {
-    el.classList.toggle("hot", st.a.indexOf(el.dataset.a) !== -1);
-  });
-}
-sPrev.addEventListener("click", function () { if (cur > 0) { cur--; renderStep(); } });
-sNext.addEventListener("click", function () { if (cur < STEPS.length - 1) { cur++; renderStep(); } });
-document.querySelector(".stepper").addEventListener("keydown", function (e) {
-  if (e.key === "ArrowLeft" && cur > 0) { cur--; renderStep(); }
-  if (e.key === "ArrowRight" && cur < STEPS.length - 1) { cur++; renderStep(); }
-});
-renderStep();
+/* (request-flow stepper removed — flows now live as expandable use cases above) */
 
 /* ---------- roadmap (weeks 1–9) ---------- */
 var RM_WEEKS = 9;
