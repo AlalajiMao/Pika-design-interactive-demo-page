@@ -528,7 +528,7 @@ svg.smx g.hap.sub.lit .sml { fill: var(--accent-ink); }
 .pyr { display: flex; flex-direction: column-reverse; align-items: center; gap: 5px; margin-top: 10px; }
 .pyr-l { border: 1.5px solid var(--agent); background: var(--agent-soft); color: var(--agent-ink); text-align: center; font: 600 11.5px ui-monospace, monospace; padding: 7px 6px; }
 .pyr-l small { display: block; font: 400 10.5px var(--font-body); color: var(--muted); }
-.pyr-l.w4 { width: 100%; } .pyr-l.w3 { width: 82%; } .pyr-l.w2 { width: 64%; } .pyr-l.w1 { width: 46%; }
+.pyr-l.w5 { width: 100%; } .pyr-l.w4 { width: 86%; } .pyr-l.w3 { width: 72%; } .pyr-l.w2 { width: 58%; } .pyr-l.w1 { width: 44%; }
 
 /* scene 15 · close */
 .close-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; gap: 22px; }
@@ -1242,7 +1242,7 @@ jobs: <span class="hl">succeeded</span> · completed_at set</span></pre>
             <li class="sub" data-g="j2"><span class="h-n">2</span><span><strong>Plan.</strong> The five-layer context goes to <span class="h-path">llm.plan</span> — itself a registered primitive: LLM metering, rate limits, idempotency from the same gateway machinery. The planner is not special.</span></li>
             <li class="sub" data-g="j3"><span class="h-n">3</span><span><strong>Act.</strong> Tool calls pass the budget gate, validate against the primitive's input schema, and append StepRuns to the session's open Job. <em>From here the async half is literally Scene 7, beats 2–6.</em></span></li>
             <li class="sub" data-g="j4"><span class="h-n">4</span><span><strong>Observe.</strong> <span class="h-path">step.completed</span> wakes the worker; results enter the manifest as references + cached descriptions — never pixels. Loop until the model presents or asks.</span></li>
-            <li class="sub" data-g="j5"><span class="h-n">5</span><span><strong>Choose &amp; gate.</strong> The user picks a draft → <span class="h-path">pin_asset</span>; the next step is a video render → the confirmation gate shows the estimate first. In this domain the dangerous operation <em>is</em> the expensive operation — the cost gate is the safety gate.</span></li>
+            <li class="sub" data-g="j5"><span class="h-n">5</span><span><strong>Choose &amp; gate.</strong> The user picks a draft → <span class="h-path">pin_asset</span>; the next step is a video render → the confirmation gate shows the estimate first. In this domain the dangerous operation <em>is</em> the expensive operation — the cost gate is the safety gate. Content safety is layered the same way: platform-owned moderation primitives check messages and uploads before the model or the providers ever see them.</span></li>
           </ol>
         </div>
         <div>
@@ -1288,10 +1288,11 @@ turn → tool_calls[] → step_run_id → asset lineage
         <div>
           <span class="proj-cap" style="color:var(--agent-ink)">The eval pyramid · fills bottom-up</span>
           <div class="pyr">
-            <div class="pyr-l w4 sub" data-g="k3">harness tests · CI<small>recorded LLM responses + mocked primitives — catches "the harness broke," which is most regressions</small></div>
-            <div class="pyr-l w3 sub" data-g="k3">offline eval suite · release gate<small>50–100 briefs × N runs → score distributions; programmatic checks + a pinned LLM judge; a drop past threshold blocks deploy</small></div>
-            <div class="pyr-l w2 sub" data-g="k4">pairwise comparison<small>for prompt/model changes — far more stable than absolute scores on creative output</small></div>
-            <div class="pyr-l w1 sub" data-g="k4">online signals<small>canary by session % · draft acceptance · regens per asset · cost per completed session — the ground truth the offline suite must predict</small></div>
+            <div class="pyr-l w5 sub" data-g="k3">harness tests · CI — the machinery, LLM removed<small>recorded responses + mocked primitives; most regressions are "code broke the loop" — caught on every commit</small></div>
+            <div class="pyr-l w4 sub" data-g="k3">tool-selection evals · prompt gate<small>live llm.plan, calls validated but never executed — costs tokens only; gates every prompt, tool-description, and model change</small></div>
+            <div class="pyr-l w3 sub" data-g="k4">offline eval suite · release gate<small>50–100 briefs × N runs → score distributions; programmatic checks + a pinned, human-calibrated LLM judge; a median drop blocks deploy</small></div>
+            <div class="pyr-l w2 sub" data-g="k4">pairwise comparison<small>two outputs, same brief, "which is better" — shared noise cancels; for prompt/model changes</small></div>
+            <div class="pyr-l w1 sub" data-g="k4">online signals + explicit 👍/👎<small>draft acceptance · regens per asset · cost per session; a thumbs-down session becomes a new eval brief — the ground truth offline layers must predict</small></div>
           </div>
         </div>
       </div>
@@ -1467,7 +1468,7 @@ turn → tool_calls[] → step_run_id → asset lineage
     <div class="section-head"><div class="eyebrow">System · Resiliency</div><h2>Six failure domains, absorbed</h2>
       <p>The bar: a failure must never cost a duplicate render or a stuck Job.</p></div>
     <div class="grid g2">
-      <div class="card"><h3>A call fails → classified</h3><p>The gateway classifies every failure: <em>transient</em> (backoff + jitter as a delayed retry message, attempts capped by registry policy), <em>permanent</em> (fail fast, actionable error), <em>quota</em> (reschedule, don't burn an attempt). Fan-out steps get partial-success: deliver at the declared minimum, retry only the shortfall — never re-bill successes.</p></div>
+      <div class="card"><h3>A call fails → classified</h3><p>The gateway classifies every failure: <em>transient</em> (backoff + jitter as a delayed retry message, attempts capped by registry policy), <em>permanent</em> (fail fast, actionable error), <em>quota</em> (reschedule, don't burn an attempt). Fan-out steps get partial-success via the step's optional <code>min_outputs</code>: deliver at the declared minimum, retry only the shortfall — never re-bill successes.</p></div>
       <div class="card"><h3>Same work twice → idempotency</h3><p>Every Job and StepRun carries <code>project_id + step_id + params_hash</code>; the gateway dedupes, so redeliveries, double-clicks, and crash-restart re-calls collapse into one billed call. The user's explicit <em>Regenerate</em> appends a nonce — a new render on purpose is a new purchase.</p></div>
       <div class="card"><h3>Process dies → redelivery</h3><p>Handlers are stateless; every transition is a conditional update (<code>WHERE status='running'</code>); unacked messages redeliver with the same key. Jobs resume from the last succeeded StepRun's checkpoint, never from the top; intermediates stay in cold storage 30 days.</p></div>
       <div class="card"><h3>Lost callback → deadline check</h3><p>Every async dispatch schedules its own <code>check_step</code> message at p95 × margin. When it fires: still working → reschedule; finished → recover through the same completion transaction; unknown → <code>timed_out</code>, retried as transient. The callback/watchdog race has one winner — the conditional update.</p></div>
@@ -1485,9 +1486,9 @@ turn → tool_calls[] → step_run_id → asset lineage
       <p>Steps are stored in order, but the DAG is implied by <code>input_mapping</code> — any step may reference any earlier step's output. Field-level tables live in the design doc §4.1; storage engines in Appendix D.</p></div>
     <div class="grid g3">
       <div class="card entity"><h3>Primitive <span class="tag shared">registry</span></h3><ul>
-        <li><span class="pk">primitive_id</span> · name · category</li><li>input_schema · output_schema</li><li>execution_mode (sync / async)</li><li>cost_estimate · latency_estimate {p50, p95}</li><li>quota_policy · retry_policy</li></ul></div>
+        <li><span class="pk">primitive_id</span> · name · category</li><li>description — written for the LLM (tool def)</li><li>input_schema · output_schema</li><li>execution_mode (sync / async)</li><li>cost_estimate · latency_estimate {p50, p95}</li><li>quota_policy · retry_policy</li></ul></div>
       <div class="card entity"><h3>AppSpec <span class="tag shared">immutable</span></h3><ul>
-        <li><span class="pk">app_id + version</span> · owner_team</li><li>status: draft → staged → published</li><li>steps[]: step_id · primitive_id</li><li>&nbsp;&nbsp;ui_component_type</li><li>&nbsp;&nbsp;input_mapping · output_contract</li></ul></div>
+        <li><span class="pk">app_id + version</span> · owner_team</li><li>status: draft → staged → published</li><li>steps[]: step_id · primitive_id</li><li>&nbsp;&nbsp;ui_component_type</li><li>&nbsp;&nbsp;input_mapping · output_contract</li><li>&nbsp;&nbsp;min_outputs (optional, fan-out steps)</li></ul></div>
       <div class="card entity"><h3>Job <span class="tag shared">runtime</span></h3><ul>
         <li><span class="pk">job_id</span> · app_id + app_version</li><li>&nbsp;&nbsp;(pinned <b>by value — no FK</b>)</li><li>project_id / user_id</li><li>status · idempotency_key (UNIQUE)</li><li>no step cursor — derived by the reducer</li></ul></div>
       <div class="card entity"><h3>StepRun <span class="tag shared">runtime</span></h3><ul>
@@ -1606,11 +1607,11 @@ turn → tool_calls[] → step_run_id → asset lineage
     <table class="share-table">
       <thead><tr><th>Component</th><th>Part 2 status</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td>Primitive Library</td><td><span class="tag shared">shared · unchanged</span></td><td class="note">Registry metadata mechanically translated into LLM tool definitions — one source of truth; a new primitive is instantly a new tool.</td></tr>
+        <tr><td>Primitive Library</td><td><span class="tag shared">shared · mechanism unchanged</span></td><td class="note">The planner is just one more registered primitive (<code>llm.plan</code>); registry metadata doubles as the LLM tool definitions — a new primitive is instantly a new tool.</td></tr>
         <tr><td>Job Runner</td><td><span class="tag shared">shared · one extension</span></td><td class="note">Open-ended session Jobs with runtime-appended steps.</td></tr>
         <tr><td>Asset Store · App Studio</td><td><span class="tag shared">shared · unchanged</span></td><td class="note">Apps and agent coexist as two front doors.</td></tr>
         <tr><td>Metrics &amp; Logging</td><td><span class="tag shared">shared · new dims</span></td><td class="note">Per-session token cost, per-turn media cost.</td></tr>
-        <tr><td>Chat + Canvas UI</td><td><span class="tag new">new</span></td><td class="note">Streaming chat + asset canvas; reuses <code>step-components</code> asset viewers and the SSE client.</td></tr>
+        <tr><td>Chat + Canvas UI</td><td><span class="tag new">new</span></td><td class="note">Streaming chat + asset canvas; reuses <code>step-components</code> asset viewers and the SSE client. Every presented result carries a 👍/👎 + optional note, feeding the online signals.</td></tr>
         <tr><td>Agent Service</td><td><span class="tag new">new</span></td><td class="note">Turn worker · context assembler · budget gate · tool adapter — same rows+queue pattern, its own <code>agent</code> schema.</td></tr>
         <tr><td>Eval Harness</td><td><span class="tag new">new</span></td><td class="note">Offline only — never in the serving path.</td></tr>
       </tbody>
@@ -1625,9 +1626,9 @@ turn → tool_calls[] → step_run_id → asset lineage
       <tbody>
         <tr><td>Control loop</td><td><span class="tag new">new</span></td><td class="note">Event-driven, user-in-the-loop: session state in rows, progress on queue messages, nothing resident. Three wake events: user message · StepRun completion · LLM response. Action space: call a tool | ask the user | present. <code>llm.plan</code> is itself a registered primitive — the planner is not special.</td></tr>
         <tr><td>Context management</td><td><span class="tag new">new</span></td><td class="note">Five layers, cheapest first: cached system prompt + tool catalog → rolling summary → recent turns → asset manifest (refs + cached vision descriptions, never pixels) → budget state. Compaction is derived data; the turn log stays immutable truth.</td></tr>
-        <tr><td>Tool interface</td><td><span class="tag shared">inherited</span></td><td class="note">The registry is our MCP. Four agent-only tools ride alongside: <code>inspect_asset</code> · <code>list_session_assets</code> · <code>pin_asset</code> · <code>estimate_cost</code>. Calls validate against the primitive's input schema, then execute as StepRuns.</td></tr>
+        <tr><td>Tool interface</td><td><span class="tag shared">inherited</span></td><td class="note">The registry is our MCP, plus a thin adapter. Four agent-only tools ride alongside: <code>inspect_asset</code> · <code>list_session_assets</code> · <code>pin_asset</code> · <code>estimate_cost</code>. Calls validate against the primitive's input schema, then execute as StepRuns.</td></tr>
         <tr><td>Memory &amp; state</td><td><span class="tag shared">inherited</span></td><td class="note">The scratchpad <em>is</em> the database: AgentSession + AgentTurn + the open Job's StepRuns + pinned selections. No second state carrier to drift.</td></tr>
-        <tr><td>Observability &amp; guardrails</td><td><span class="tag shared">inherited</span></td><td class="note">Every tool call is a StepRun — Part 1 metrics, cost attribution, and ops view apply unmodified. The audit chain reads turn → tool_call → step_run → asset, end to end. Tool results and asset descriptions are data, never instructions.</td></tr>
+        <tr><td>Observability &amp; guardrails</td><td><span class="tag shared">inherited</span></td><td class="note">Every tool call is a StepRun — Part 1 metrics, cost attribution, and ops view apply unmodified. The audit chain reads turn → tool_call → step_run → asset, end to end. Two lines of content defense: platform-owned moderation is itself a primitive (<code>moderation.text</code> / <code>moderation.image</code>) — messages checked before <code>llm.plan</code>, uploads scanned at ingest, outputs spot-checked; provider-side filters are the second line, surfacing as <code>permanent</code> errors. Refusal rates are a metrics dimension — repeat offenders get throttled, not just refused. Tool results and asset descriptions are data, never instructions.</td></tr>
         <tr><td>Environment</td><td><span class="tag shared">inherited</span></td><td class="note">Workspace-as-data, no sandbox: every tool is a remote primitive consuming and producing assets by reference — even ffmpeg is behind the gateway. Named upgrade: if <code>run_code</code> earns its place, it gets an ephemeral per-call sandbox; the container is never the source of truth.</td></tr>
       </tbody>
     </table>
@@ -1669,10 +1670,11 @@ turn → tool_calls[] → step_run_id → asset lineage
       <div class="card">
         <h3>Testing &amp; evaluation <span class="tag new">release gate</span></h3>
         <ul>
-          <li><strong>Harness tests (CI):</strong> loop mechanics with recorded LLM responses + mocked primitives.</li>
-          <li><strong>Offline suite:</strong> 50–100 briefs × N runs → score <em>distributions</em>; programmatic checks + a pinned LLM judge calibrated against human eval; regression blocks deploy.</li>
-          <li><strong>Pairwise comparison</strong> for prompt/model changes.</li>
-          <li><strong>Online:</strong> canary by session %; draft acceptance, regens per asset, cost per completed session.</li>
+          <li><strong>Harness tests (CI):</strong> the machinery with the LLM removed — recorded responses + mocked primitives, deterministic, every commit.</li>
+          <li><strong>Tool-selection evals (prompt gate):</strong> context fixtures replayed against the live planner only — calls validated, never executed; tokens-only cost gates every prompt/tool-description/model change.</li>
+          <li><strong>Offline suite (release gate):</strong> 50–100 briefs × N runs → score <em>distributions</em>; programmatic checks + a pinned LLM judge calibrated against human scores; median regression blocks deploy.</li>
+          <li><strong>Pairwise comparison</strong> for prompt/model changes — shared noise cancels.</li>
+          <li><strong>Online:</strong> canary by session %; draft acceptance, regens per asset, cost per session — plus explicit 👍/👎 that recalibrates the judge and seeds new briefs.</li>
         </ul>
       </div>
       <div class="card">
@@ -1703,11 +1705,11 @@ turn → tool_calls[] → step_run_id → asset lineage
         <tr><td>W2 · Job Runner</td><td>2.5 wk</td><td class="note">Every failure-path case passes; <code>kill -9</code> anywhere leaves a resumable Job; duplicate deliveries cause zero double-bills.</td></tr>
         <tr><td>W3 · Spec &amp; Studio backend</td><td>2 wk</td><td class="note">An invalid connection cannot pass validation; dry-run yields the per-step report; publish is immutable + staged.</td></tr>
         <tr><td>Integration week (all hands)</td><td>1 wk</td><td class="note"><strong>Internal MVP:</strong> a 3-step App runs end to end via API and survives a mid-run deploy — end of week 4.</td></tr>
-        <tr><td>W4 · Frontend Experience</td><td>2 wk</td><td class="note">Anime runs end to end from the browser, including close-the-tab resume.</td></tr>
-        <tr><td>W5 · Studio canvas</td><td>2 wk</td><td class="note">A non-engineer persona composes and publishes Anime with no engineering help.</td></tr>
+        <tr><td>W4 · Frontend Experience</td><td>2 wk</td><td class="note">The example App runs end to end from the browser, including close-the-tab resume.</td></tr>
+        <tr><td>W5 · Studio canvas</td><td>2 wk</td><td class="note">A non-engineer persona composes and publishes the example App with no engineering help.</td></tr>
         <tr><td>W6 · Metrics &amp; BI</td><td>1.5 wk</td><td class="note">Cost-per-App visible within a minute of a run; queue-depth and failure-rate alerts live.</td></tr>
         <tr><td>Hardening (all hands)</td><td>1 wk</td><td class="note">v1: staged-rollout drill, gateway load pass, retention sweep verified, on-call runbook — end of week 7.</td></tr>
-        <tr><td>Part 2 · Agent (own engineer)</td><td>5 wk</td><td class="note">Weeks 1–2 Agent Service MVP · wk 3 cost controls · wk 4 eval harness · wk 5 hardening (resume, loop guards, canary).</td></tr>
+        <tr><td>Part 2 · Agent (own engineer)</td><td>5 wk</td><td class="note">P1 Agent Service MVP + P2 tool adapter (wk 5–6) · P3 cost controls (wk 7) · P4 eval harness incl. the tool-selection suite (wk 8) · hardening + canary (wk 9). Starts when the Part 1 MVP lands — it needs the integrated platform, not the finished v1.</td></tr>
       </tbody>
     </table>
     </div>
@@ -1717,6 +1719,27 @@ turn → tool_calls[] → step_run_id → asset lineage
       <h3 style="margin-bottom:14px">Maximum-parallelism schedule · 3 engineers + 1 on the agent</h3>
       <div class="rm-scroll"><div class="rm-grid" id="rmgrid"></div></div>
       <p class="rm-note">Teal = Part 1 workstreams · violet = Part 2 · dashed edge = milestone (MVP wk 4 · v1 wk 7 · agent wk 9). W2 is the critical path; W6 floats. A 4th engineer takes W6 early + the ops view, buying ~1 week.</p>
+    </div>
+
+    <div class="section-gap"></div>
+    <div class="section-head"><div class="eyebrow">Plan · Deferred by design</div><h2>Every simplification carries a named successor</h2>
+      <p>The rule from §5.5, run through the whole design: bake in what is expensive to retrofit; defer what is cheap to migrate. Nothing below is a dead end — each row has a successor and an explicit revisit trigger (design doc §8.1, §17.1).</p></div>
+    <div class="share-table-wrap">
+    <table class="share-table">
+      <thead><tr><th>v1 choice</th><th>Named upgrade</th><th>Revisit trigger</th></tr></thead>
+      <tbody>
+        <tr><td>Job sequencing on rows + pg-boss</td><td class="note">Temporal at the step level (fan-out/join inside a step)</td><td class="note">One-click Apps need parallel pipelines — sequential one-click Apps already run on v1</td></tr>
+        <tr><td>pg-boss as the queue</td><td class="note">Dedicated queue infrastructure</td><td class="note">Queue throughput outgrows Postgres</td></tr>
+        <tr><td>Specs as JSONB in the shared cluster</td><td class="note">Own cluster or document store — copy job + dual-read window</td><td class="note">Spec read latency degrades despite caching, or volume hits tens of GB</td></tr>
+        <tr><td>Gateway pacing in pod memory</td><td class="note">Redis-backed shared pacing state</td><td class="note">Gateway scales to multiple pods per provider</td></tr>
+        <tr><td>SSE fan-out on Postgres NOTIFY</td><td class="note">Redis pub/sub, one channel per Job</td><td class="note">Replica count × event volume makes broadcast wasteful</td></tr>
+        <tr><td>Runtime tables in one cluster</td><td class="note">Time-partitioning + archival; closed sessions → JSONL</td><td class="note">Volume growth — an archival story, not an engine change</td></tr>
+        <tr><td>One repository</td><td class="note">A component graduates to its own repo</td><td class="note">It gains its own team and external consumers</td></tr>
+        <tr><td>One agent, one flat tool catalog <span class="tag new">P2</span></td><td class="note">Category tools → <code>search_tools</code> retrieval → scoped subagents as child sessions</td><td class="note">Tool-selection errors rise in evals as the catalog grows, or briefs demand per-scene fan-out</td></tr>
+        <tr><td>Workspace-as-data, no sandbox <span class="tag new">P2</span></td><td class="note">Ephemeral per-call sandbox behind a <code>run_code</code> tool</td><td class="note">Custom filter graphs or bulk edits demand local compute</td></tr>
+        <tr><td>Session-scoped memory only <span class="tag new">P2</span></td><td class="note">Long-term cross-session memory (user style, preferences)</td><td class="note">Product signal that users expect continuity</td></tr>
+      </tbody>
+    </table>
     </div>
 
     <div class="section-gap"></div>
@@ -1922,7 +1945,8 @@ var NODE_DATA = {
   jobrunner: { t: "Job Runner", tag: "shared", tl: "A database-backed state machine", b: [
     "Postgres jobs/step_runs rows are the single source of truth; the run advances only on events",
     "pg-boss rides in the same Postgres — a state change and its message commit in one transaction",
-    "Reducer: (spec, rows, event) → next transition; workers do one hop and exit; SSE fan-out via NOTIFY",
+    "Reducer: (spec, rows, event) → next transition; workers do one hop and exit",
+    "SSE fan-out is a deliberate broadcast over NOTIFY — safe because push is best-effort; named upgrade: Redis pub/sub, one channel per Job",
     "Every async dispatch schedules its own deadline check — the watchdog for lost callbacks" ],
     stack: "services/job-runner — TypeScript · one deployable, three roles (API / workers / SSE) scaled independently",
     p2: "Part 2: shared, one extension — open-ended session Jobs whose steps the agent appends at runtime." },
@@ -1944,7 +1968,7 @@ var NODE_DATA = {
     "Key events → Kafka → ClickHouse: near-real-time BI, no batch jobs — the one pipeline we own",
     "Every event tagged app_id + owner_team from day one" ],
     stack: "packages/telemetry — OTel helpers + event schemas · ClickHouse managed · Metabase/Grafana",
-    p2: "Part 2: gains per-session token cost and per-turn media cost dimensions." },
+    p2: "Part 2: gains per-session token cost, per-turn media cost — and moderation refusal-rate dimensions." },
   bi: { t: "BI Dashboard", tag: "shared", tl: "The business view", b: [
     "Per-App conversion and cost-per-completed-Job, near-real-time",
     "Ops view: any Job as its StepRun timeline, with force-retry / force-fail / skip step" ],
@@ -1952,7 +1976,8 @@ var NODE_DATA = {
     p2: "Part 2: adds per-session agent cost views." },
   chatui: { t: "Chat + Canvas UI", tag: "new", tl: "The agent's front door", b: [
     "Streaming chat beside an asset canvas — replaces step-by-step screens",
-    "Renders assets with the same step-components viewers; same SSE client as App steps" ],
+    "Renders assets with the same step-components viewers; same SSE client as App steps",
+    "Every presented result carries 👍/👎 + an optional note — feeds online signals and keeps the eval judge calibrated" ],
     stack: "apps/web gains the surface — same monorepo, same packages",
     p2: "New in Part 2." },
   agentsvc: { t: "Agent Service", tag: "new", tl: "The loop, on the same rows+queue pattern", b: [
@@ -1968,10 +1993,11 @@ var NODE_DATA = {
     "Prompt caching on the stable system prompt + tool catalog" ],
     stack: "Provider API (e.g. Claude) behind the gateway, with prompt caching enabled",
     p2: "New dependency in Part 2." },
-  eval: { t: "Eval Harness", tag: "new", tl: "The quality gate — offline only", b: [
-    "50–100 creative briefs × N runs — score distributions, not points",
-    "Programmatic checks + pinned LLM judge, calibrated against human eval",
-    "Pairwise comparison for prompt/model changes; blocks deploys on regression" ],
+  eval: { t: "Eval Harness", tag: "new", tl: "The quality gate — offline only, five layers", b: [
+    "CI: the machinery with the LLM removed — recorded responses + mocked primitives, deterministic",
+    "Tool-selection evals: live llm.plan only, calls validated but never executed — tokens-only cost gates every prompt/model change",
+    "Release gate: 50–100 briefs × N runs → score distributions; programmatic checks + a pinned, human-calibrated judge",
+    "Pairwise comparison for prompt/model changes; online 👍/👎 recalibrates the judge and seeds new briefs" ],
     stack: "packages/eval-harness — replays a YAML brief suite against the Agent Service",
     p2: "New in Part 2." }
 };
@@ -2070,6 +2096,7 @@ var PHASES = [
   { l: "W6 · Metrics & BI", s: 5, e: 6, p2: false },
   { l: "Hardening — v1", s: 7, e: 7, p2: false, ms: "v1" },
   { l: "P2 · Agent Service MVP", s: 5, e: 6, p2: true },
+  { l: "P2 · Tool adapter", s: 5, e: 6, p2: true },
   { l: "P2 · Cost controls", s: 7, e: 7, p2: true },
   { l: "P2 · Eval harness", s: 8, e: 8, p2: true },
   { l: "P2 · Hardening + canary", s: 9, e: 9, p2: true, ms: "agent live" }
@@ -2103,10 +2130,10 @@ var PROMPTS = [
   ["W4 · Frontend Experience", "Implement §2.4: step-components live mode against the registry, app shell + catalog, SSE client with fetch-then-subscribe (§5.1), presigned upload/download per Appendix G. Exit: §8-W4 criteria."],
   ["W5 · Studio canvas", "Implement §2.3's editor: drag-and-drop canvas over the registry, author-mode step components, in-browser validation via app-spec, fixture editor and dry-run console per Appendix F. Exit: §8-W5 criteria."],
   ["W6 · Metrics & BI", "Implement §2.6: telemetry package with Appendix E's event schemas, event stream into ClickHouse, the BI dashboard and the §6.7 ops view + alerts; wire cloud-native log collection. Exit: §8-W6 criteria."],
-  ["P2 · Agent Service", "Implement a server-side agent loop on the Job Runner's rows-plus-queue pattern: each turn assembles compacted context, calls the planner LLM, executes tool calls by appending StepRuns to the session's open Job, streams progress over SSE; sessions survive restarts because state lives in rows."],
-  ["P2 · Tool adapter", "Generate LLM tool definitions from Primitive registry metadata; add inspect_asset, list_session_assets, pin_asset, estimate_cost."],
-  ["P2 · Budget middleware", "Enforce session/turn budget envelopes with pre-call estimates; require user confirmation above a threshold; implement loop guards."],
-  ["P2 · Eval harness", "Replay a YAML brief suite against the Agent Service N× per brief; score with programmatic checks + a pinned LLM judge; store distributions per release; fail CI on median regression."]
+  ["P2 · Agent Service", "Implement §11.1's control loop as §12's turn worker, on the Job Runner's rows-plus-queue pattern: wake on a user message, a StepRun completion, or an LLM response; assemble §11.3's five-layer context; call llm.plan through the gateway; append StepRuns to the session's open Job; stream progress over SSE. Include the agent schema migrations (§14) and the chat + canvas surface. Exit: §17-P1 criteria."],
+  ["P2 · Tool adapter", "Implement §11.2: generate LLM tool definitions mechanically from registry metadata; add inspect_asset, list_session_assets, pin_asset, estimate_cost; validate every parsed call against the primitive's input schema before it becomes a StepRun; return results by reference, failures structured. Exit: §17-P2 criteria."],
+  ["P2 · Budget middleware", "Implement §15's cost controls as the budget gate: session/turn envelopes on agent_sessions.budget, checked and deducted in the StepRun transaction; pre-call estimates from registry cost_estimate; confirmation above the threshold; loop guards that end a thrashing turn. Exit: §17-P3 criteria."],
+  ["P2 · Eval harness", "Implement §16 as packages/eval-harness: YAML brief suite, N× replay — recorded responses for CI, live models for release runs; score distributions with programmatic checks + a pinned judge; pairwise mode; the planner-only tool-selection suite (live llm.plan, calls validated but never executed); accept archived-session JSONL as replay input. Exit: §17-P4 criteria."]
 ];
 var pl = document.getElementById("promptlist");
 PROMPTS.forEach(function (p) {
