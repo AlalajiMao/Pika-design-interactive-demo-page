@@ -576,6 +576,9 @@ svg.flow .pkt { fill: var(--accent); }
 .flow-narr { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; margin-top: 12px; font-size: 13px; color: var(--muted); min-height: 74px; }
 .flow-narr b { color: var(--ink); }
 
+/* brief quote */
+.brief-q { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 11px 14px; font-size: 13.5px; font-style: italic; color: var(--ink); }
+
 /* shared small bits */
 .shot-s { max-width: 100%; border: 1.5px solid var(--line); display: block; }
 .tools-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
@@ -692,12 +695,12 @@ svg.dmsvg { display: block; width: 100%; height: auto; border: 1.5px solid var(-
             <span class="proj-cap">Part 1 · the questions this design answers</span>
             <div class="bq"><b>Architecture &amp; data model</b><span>how an "App" is represented in the system</span><i>Scenes 2–3</i></div>
             <div class="bq"><b>Services &amp; components</b><span>the five subsystems behind Apps, and what each owns</span><i>Scenes 4 · 6</i></div>
-            <div class="bq"><b>Key trade-offs</b><span>sync vs. async execution, state management, choice of components</span><i>Scenes 7 · 10</i></div>
-            <div class="bq"><b>Resiliency</b><span>expensive, failure-prone video jobs — retries, resume, task-level monitoring</span><i>Scenes 8–9</i></div>
+            <div class="bq"><b>Key trade-offs</b><span>sync vs. async execution, state management, choice of components</span><i>Scenes 7 · 11</i></div>
+            <div class="bq"><b>Resiliency</b><span>expensive, failure-prone video jobs — retries, resume, task-level monitoring</span><i>Scenes 8–10</i></div>
             <div class="bq"><b>Scalability</b><span>Growth ships a new App without engineering effort</span><i>Scene 5</i></div>
-            <div class="bq p2"><b>Part 2 · Agent experience</b><span>a Claude-Code-style agent for creative users, on the same platform</span><i>Scenes 12–15</i></div>
+            <div class="bq p2"><b>Part 2 · Agent experience</b><span>a Claude-Code-style agent for creative users, on the same platform</span><i>Scenes 13–16</i></div>
           </div>
-          <p class="bm-note" style="margin-top:12px">Deliverables: <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">the design doc ↗</a> · this walkthrough · the build estimate (Scene 11) · the coding-agent prompts (Plan tab).</p>
+          <p class="bm-note" style="margin-top:12px">Deliverables: <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">the design doc ↗</a> · this walkthrough · the build estimate (Scene 12) · the coding-agent prompts (Plan tab).</p>
         </div>
         <div>
           <div class="bmock">
@@ -1148,7 +1151,36 @@ jobs: <span class="hl">succeeded</span> · completed_at set</span></pre>
       </div>
     </div>
 
-    <!-- SCENE 10 · the calls we made -->
+    <!-- SCENE 10 · brief answers: resiliency & scalability -->
+    <div class="scene" data-q="Answers · Resiliency &amp; Scalability — the brief, verbatim">
+      <div class="sc-meta"><span class="sc-q"></span><span class="sc-count"></span></div>
+      <h3 class="sc-title">Two questions from the brief, answered in place</h3>
+      <p class="narr">You have just watched both answers happen. Here they are again, against the brief's own wording — nothing to hunt for in the doc.</p>
+      <div class="cols2">
+        <div class="sub" data-g="q1">
+          <span class="proj-cap">From the brief</span>
+          <div class="brief-q">"Resiliency. Video generation is expensive and failure-prone. How do you handle long-running jobs, retries, and task-level monitoring?"</div>
+          <div class="chips-v" style="margin-top:10px">
+            <div class="fchip"><b>Long-running jobs</b><p>A run is rows + messages — no process ever holds a job. Every async dispatch schedules its own deadline watchdog, and a failed Job resumes from the last succeeded step's checkpoint, never from the top. <em>(Scene 7)</em></p></div>
+            <div class="fchip"><b>Retries</b><p>The gateway classifies every failure — transient / permanent / quota — and retries with backoff under per-primitive policy; idempotency keys make every retry bill-safe. <em>(Scene 8)</em></p></div>
+            <div class="fchip"><b>Task-level monitoring</b><p>Per-primitive failure &amp; queue-depth metrics, stuck-job SLAs, 10× cost-anomaly alerts — and an ops view where any job is a StepRun timeline with force-retry · force-fail · skip. <em>(Scene 9)</em></p></div>
+          </div>
+          <p class="bm-note" style="margin-top:10px">Full detail: <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">design doc §6.1–6.7 ↗</a></p>
+        </div>
+        <div class="sub" data-g="q2">
+          <span class="proj-cap">From the brief</span>
+          <div class="brief-q">"Scalability. How could a team like Growth marketing team ship a new App without engineering effort?"</div>
+          <div class="chips-v" style="margin-top:10px">
+            <div class="fchip"><b>Compose, don't code</b><p>Growth assembles Apps on a canvas from registry cards that carry cost and latency; drawing a wire writes a line of spec, and a type-incompatible wire cannot be drawn. <em>(Scene 5)</em></p></div>
+            <div class="fchip"><b>Nothing publishes on faith</b><p>A sandbox dry-run on real calls gates the publish button; publishing appends an immutable version, rolled out gradually — running Jobs stay untouched.</p></div>
+            <div class="fchip"><b>New capability, no UI work</b><p>A newly registered primitive appears in the palette automatically; a new kind of step UI is one shared component, added once by engineering, reused by every future App.</p></div>
+          </div>
+          <p class="bm-note" style="margin-top:10px">Full detail: <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">design doc §7, Appendix F ↗</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 11 · the calls we made -->
     <div class="scene" data-q="Answers · Key trade-offs">
       <div class="sc-meta"><span class="sc-q"></span><span class="sc-count"></span></div>
       <h3 class="sc-title">The calls we made</h3>
@@ -1800,7 +1832,7 @@ tabBtns.forEach(function (b) {
 
 /* ---------- story player with grouped reveals ---------- */
 var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-var P2_FIRST = 11; /* scenes 12+ (0-indexed 11) are Part 2 */
+var P2_FIRST = 12; /* scenes 13+ (0-indexed 12) are Part 2 */
 var storyBox = document.getElementById("storybox");
 var sceneEls = Array.prototype.slice.call(storyBox.querySelectorAll(".scene"));
 var stPrev = document.getElementById("st-prev"), stNext = document.getElementById("st-next");
