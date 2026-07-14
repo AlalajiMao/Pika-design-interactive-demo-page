@@ -1159,6 +1159,19 @@ jobs: <span class="hl">succeeded</span> · completed_at set</span></pre>
         <div class="decision sub" data-g="g3"><span class="dq">Apps: data or code?</span><span class="dp">→ declarative spec, engineering-owned `custom` step as the escape hatch</span><span class="dw">The expressiveness ceiling is a feature at v1: what Growth can draw, the platform can validate, price, and run safely.</span></div>
         <div class="decision sub" data-g="g4"><span class="dq">Who talks to the model APIs?</span><span class="dp">→ one gateway, nobody else</span><span class="dw">Every call costs real money — the chokepoint is the point: one rate budget per primitive, one dedupe, one cost meter. Stateless replicas, so the failure-domain cost is contained.</span></div>
         <div class="decision sub" data-g="g5"><span class="dq">One database, or one per shape?</span><span class="dp">→ one Postgres, schemas per domain</span><span class="dw">Spec volume is single-digit gigabytes and infinitely cacheable; the load that actually grows needs ACID and ClickHouse — a document store solves neither. The rule used throughout: bake in what's expensive to retrofit (idempotency keys, tenant tags); defer what's cheap to migrate (the engine behind an interface).</span></div>
+        <div class="sub" data-g="g6" style="margin-top:16px">
+          <span class="proj-cap">Component choices · the smaller picks, from the doc verbatim</span>
+          <div class="pros-wrap"><table class="pros" style="font-size:12.5px">
+            <thead><tr><th>Layer</th><th>Choice</th><th>Over</th><th>Because</th></tr></thead>
+            <tbody>
+              <tr><td>Runtime state</td><td>Postgres (+ JSONB for specs)</td><td>MongoDB / DynamoDB</td><td>Idempotency uniqueness and multi-row transitions are load-bearing correctness features; native ACID beats operating a second database (Appendix D)</td></tr>
+              <tr><td>Timers &amp; retry scheduling</td><td>pg-boss</td><td>BullMQ (Redis), SQS, Temporal</td><td>Rides in the state Postgres → transactional enqueue, zero new components; swap when queue throughput outgrows Postgres (§5.2)</td></tr>
+              <tr><td>Result push</td><td>SSE</td><td>WebSockets, polling</td><td>One-way status; plain HTTP with auto-reconnect; polling kept as fallback (§5.1)</td></tr>
+              <tr><td>Gateway language</td><td>Go</td><td>TypeScript like the rest</td><td>Pure concurrent-IO workload — per-provider pacing queues, circuit breakers; small and stable enough to contain a second language</td></tr>
+              <tr><td>…</td><td colspan="3" style="color:var(--muted)">4 more layers — event pipeline · dashboards · logs &amp; infra metrics · media. <a href="https://fearless-snow-9e4.notion.site/Pika-Creative-Platform-System-Design-39a79110b33e8172a65dc456223fceb7" target="_blank" rel="noopener">Full table: design doc §5.6 ↗</a></td></tr>
+            </tbody>
+          </table></div>
+        </div>
       </div>
     </div>
 
